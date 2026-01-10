@@ -40,13 +40,24 @@ Imagine a **hill or landscape**. At each position `(x, y)` on the ground, the he
 The function `f(x, y)` describes this terrain.
 """)
 
-    # Example 3D surface
-    st.subheader("Example Surface")
-    X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
-    Z = X**2 + Y**2
-    fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
-    fig.update_layout(scene=dict(aspectratio=dict(x=1,y=1,z=0.7)), margin=dict(t=0,b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    # Example surfaces
+    st.subheader("Example Surfaces")
+
+    examples = {
+        "Quadratic": lambda X, Y: X**2 + Y**2,
+        "Linear": lambda X, Y: 2*X + 3*Y + 5,
+        "Trigonometric": lambda X, Y: np.sin(X) + np.cos(Y),
+        "Root": lambda X, Y: np.sqrt(np.abs(X)) + np.sqrt(np.abs(Y)),
+        "Rational": lambda X, Y: X / (Y + 1)
+    }
+
+    for name, func in examples.items():
+        st.markdown(f"**{name} function:**")
+        X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
+        Z = func(X, Y)
+        fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
+        fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
+        st.plotly_chart(fig, use_container_width=True)
 
 # ==========================
 # Page 2: Partial Derivatives
@@ -76,12 +87,35 @@ Partial derivatives measure **slope along one direction at a time**.
 Imagine hiking on the hill while only moving along x or y — these tell you how steep it is.
 """)
 
-    # Example surface with gradient in x/y directions
+    # Example surface with a fixed point
     st.subheader("Example Surface")
     X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
     Z = X**2 + Y**2
-    fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
-    fig.update_layout(scene=dict(aspectratio=dict(x=1,y=1,z=0.7)), margin=dict(t=0,b=0))
+
+    # Example point
+    px, py = 3, 4
+    z = px**2 + py**2
+    fx_val = 2*px
+    fy_val = 2*py
+    s = 0.8
+
+    fig = go.Figure()
+    fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False))
+
+    # Point marker
+    fig.add_trace(go.Scatter3d(x=[px], y=[py], z=[z],
+                               mode="markers", marker=dict(size=5, color='gold'),
+                               name="Example Point"))
+
+    # Partial derivative lines
+    fig.add_trace(go.Scatter3d(x=[px - s, px + s], y=[py, py],
+                               z=[z - fx_val*s, z + fx_val*s],
+                               mode="lines", line=dict(color="red", width=6), name="∂f/∂x"))
+    fig.add_trace(go.Scatter3d(x=[px, px], y=[py - s, py + s],
+                               z=[z - fy_val*s, z + fy_val*s],
+                               mode="lines", line=dict(color="green", width=6), name="∂f/∂y"))
+
+    fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
     st.plotly_chart(fig, use_container_width=True)
 
 # ==========================
@@ -101,21 +135,35 @@ It points in the **direction of steepest increase** of the function.
 """)
     st.subheader("Explanation")
     st.markdown("""
-Think of the gradient as a **horizontal compass**: it shows which way to walk on the hill to increase height fastest.  
-Its magnitude gives the **rate of increase**.
+Think of the gradient as a **horizontal compass**: it shows which way to walk on the hill to increase height fastest.
 """)
 
-    # Example surface with arrows (static)
+    # Example surface with fixed point
     st.subheader("Example Surface")
-    X, Y = np.meshgrid(np.linspace(-2,2,20), np.linspace(-2,2,20))
+    X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
     Z = X**2 + Y**2
-    fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
-    # Example arrow
-    fig.add_trace(go.Cone(x=[0], y=[0], z=[0],
-                          u=[1], v=[1], w=[0],
-                          sizemode="scaled", sizeref=0.5,
-                          anchor="tail", colorscale=[[0,'red'],[1,'red']]))
-    fig.update_layout(scene=dict(aspectratio=dict(x=1,y=1,z=0.7)), margin=dict(t=0,b=0))
+
+    # Example point
+    px, py = 3, 4
+    z = px**2 + py**2
+    fx_val = 2*px
+    fy_val = 2*py
+
+    fig = go.Figure()
+    fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False))
+    fig.add_trace(go.Scatter3d(x=[px], y=[py], z=[z],
+                               mode="markers", marker=dict(size=5, color='gold'),
+                               name="Example Point"))
+
+    # Gradient arrow (steepest ascent)
+    mag = np.hypot(fx_val, fy_val) or 1
+    dx = fx_val / mag
+    dy = fy_val / mag
+    fig.add_trace(go.Scatter3d(x=[px, px + dx], y=[py, py + dy], z=[z, z],
+                               mode="lines+markers", line=dict(color="black", width=8), marker=dict(size=4),
+                               name="Gradient (Steepest Ascent)"))
+
+    fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
     st.plotly_chart(fig, use_container_width=True)
 
 # ==========================
@@ -178,7 +226,6 @@ else:
     fig.add_trace(go.Scatter3d(x=[x_val - s, x_val + s], y=[y_val, y_val],
                                z=[z_val - fx_val * s, z_val + fx_val * s],
                                mode="lines", line=dict(color="red", width=6), name="∂f/∂x"))
-
     fig.add_trace(go.Scatter3d(x=[x_val, x_val], y=[y_val - s, y_val + s],
                                z=[z_val - fy_val * s, z_val + fy_val * s],
                                mode="lines", line=dict(color="green", width=6), name="∂f/∂y"))
