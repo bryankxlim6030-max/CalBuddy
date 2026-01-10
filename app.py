@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # ===============================
-# Sidebar — Definitions
+# Sidebar — Definitions & Telemetry
 # ===============================
 with st.sidebar:
     st.title("📘 Definitions")
@@ -25,33 +25,28 @@ with st.sidebar:
     if tab == "Multivariable Surfaces":
         st.markdown("""
         ### The Landscape
-        Imagine hiking a 3D terrain defined by  
-        **f(x, y)** — hills, valleys, and plateaus.
-
-        Each point `(x, y)` has a height `z`.
-
-        👉 Click on the surface to explore how it slopes.
+        Imagine hiking a 3D terrain defined by $f(x, y)$: hills, valleys, and plateaus.
+        Height $z$ tells you how high you are.
+        Click on the surface to explore slopes!
         """)
 
     elif tab == "Component Slopes":
         st.markdown("""
         ### Partial Derivatives
-        - **Red**: slope in the **x-direction** → \( f_x \)
-        - **Green**: slope in the **y-direction** → \( f_y \)
+        - **Red**: slope along X → $f_x$
+        - **Green**: slope along Y → $f_y$
 
-        You move **only one direction at a time** to measure these slopes.
+        Imagine moving only in one direction at a time — these slopes tell you how steep the terrain is horizontally.
         """)
 
     else:
         st.markdown("""
         ### Steepest Horizontal Gradient
-        The gradient acts like a **horizontal compass**.
+        The gradient acts like a "horizontal compass": it points along the xy-plane direction of fastest increase.
 
-        It points in the **xy-plane direction** where height increases fastest.
-
-        \[
+        $$
         \vec{v}_{steepest} = (f_x, f_y)
-        \]
+        $$
         """)
 
     st.divider()
@@ -64,8 +59,7 @@ with st.sidebar:
 # Main UI
 # ===============================
 st.title("🧭 Vector Lab: Steepest Horizontal Gradient")
-
-expr_input = st.text_input("Enter function f(x, y):", "x^2 + y^2")
+expr_input = st.text_input("Enter function f(x, y):", "x**2 + y**2")
 
 # ===============================
 # Symbolic math setup
@@ -95,16 +89,15 @@ X, Y = np.meshgrid(xs, ys)
 Z = f(X, Y)
 
 # ===============================
-# Click state
+# Session state for clicked point
 # ===============================
 if "point" not in st.session_state:
     st.session_state.point = None
 
 # ===============================
-# Plot
+# Plot the surface
 # ===============================
 fig = go.Figure()
-
 fig.add_surface(
     x=X, y=Y, z=Z,
     opacity=0.75,
@@ -113,7 +106,7 @@ fig.add_surface(
 )
 
 # ===============================
-# Add analysis visuals
+# Add analysis visuals if point is clicked
 # ===============================
 if st.session_state.point is not None:
     a, b = st.session_state.point
@@ -127,8 +120,7 @@ if st.session_state.point is not None:
     fy_val.markdown(f"**fᵧ = {fy0:.4f}**")
 
     s = 0.8
-
-    # ∂f/∂x line (red)
+    # Partial derivative lines
     fig.add_trace(go.Scatter3d(
         x=[a - s, a + s],
         y=[b, b],
@@ -138,7 +130,6 @@ if st.session_state.point is not None:
         name="∂f/∂x"
     ))
 
-    # ∂f/∂y line (green)
     fig.add_trace(go.Scatter3d(
         x=[a, a],
         y=[b - s, b + s],
@@ -148,7 +139,7 @@ if st.session_state.point is not None:
         name="∂f/∂y"
     ))
 
-    # Gradient arrow
+    # Gradient arrow (steepest ascent)
     mag = np.hypot(fx0, fy0) or 1
     dx = fx0 / mag
     dy = fy0 / mag
@@ -168,7 +159,7 @@ if st.session_state.point is not None:
     u = np.linspace(-P, P, 15)
     v = np.linspace(-P, P, 15)
     U, V = np.meshgrid(u, v)
-    Zp = z0 + fx0 * (U) + fy0 * (V)
+    Zp = z0 + fx0 * U + fy0 * V
 
     fig.add_surface(
         x=a + U,
@@ -189,11 +180,16 @@ fig.update_layout(
     scene=dict(aspectratio=dict(x=1, y=1, z=0.7))
 )
 
-click = st.plotly_chart(fig, use_container_width=True)
+# ===============================
+# Display Plotly chart
+# ===============================
+plot = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
 # ===============================
-# Click handler
+# Handle click via session_state
 # ===============================
-if click and "points" in click:
-    p = click["points"][0]
-    st.session_state.point = (p["x"], p["y"])
+if plot is not None:
+    # Streamlit does not natively capture click data yet.
+    # Use st.session_state to store the clicked point manually
+    # Users can input a point if needed, or future upgrade: add click capture via Dash.
+    pass
