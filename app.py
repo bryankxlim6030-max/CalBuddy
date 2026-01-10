@@ -1,5 +1,6 @@
 import streamlit as st
 import sympy as sp
+from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
 import numpy as np
 import plotly.graph_objects as go
 
@@ -53,7 +54,7 @@ The function `f(x, y)` describes this terrain.
 
     for name, func in examples.items():
         st.markdown(f"**{name} function:**")
-        X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
+        X, Y = np.meshgrid(np.linspace(-4, 4, 50), np.linspace(-4, 4, 50))
         Z = func(X, Y)
         fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
         fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
@@ -89,11 +90,11 @@ Imagine hiking on the hill while only moving along x or y — these tell you how
 
     # Example surface with a fixed point
     st.subheader("Example Surface")
-    X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
+    X, Y = np.meshgrid(np.linspace(-4, 4, 50), np.linspace(-4, 4, 50))
     Z = X**2 + Y**2
 
     # Example point
-    px, py = 3, 4
+    px, py = 2, 2
     z = px**2 + py**2
     fx_val = 2*px
     fy_val = 2*py
@@ -101,12 +102,10 @@ Imagine hiking on the hill while only moving along x or y — these tell you how
 
     fig = go.Figure()
     fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False))
-
     # Point marker
     fig.add_trace(go.Scatter3d(x=[px], y=[py], z=[z],
                                mode="markers", marker=dict(size=5, color='gold'),
                                name="Example Point"))
-
     # Partial derivative lines
     fig.add_trace(go.Scatter3d(x=[px - s, px + s], y=[py, py],
                                z=[z - fx_val*s, z + fx_val*s],
@@ -144,7 +143,7 @@ Think of the gradient as a **horizontal compass**: it shows which way to walk on
     Z = X**2 + Y**2
 
     # Example point
-    px, py = 3, 4
+    px, py = 2, 2
     z = px**2 + py**2
     fx_val = 2*px
     fy_val = 2*py
@@ -163,6 +162,16 @@ Think of the gradient as a **horizontal compass**: it shows which way to walk on
                                mode="lines+markers", line=dict(color="black", width=8), marker=dict(size=4),
                                name="Gradient (Steepest Ascent)"))
 
+    # Tangent plane at the point
+    P = 1.2
+    u = np.linspace(-P, P, 15)
+    v = np.linspace(-P, P, 15)
+    U, V = np.meshgrid(u, v)
+    Zp = z + fx_val * U + fy_val * V
+    fig.add_trace(go.Surface(x=px + U, y=py + V, z=Zp,
+                             colorscale=[[0, "#1e3a8a"], [1, "#1e3a8a"]],
+                             opacity=0.5, showscale=False, name="Tangent Plane"))
+
     fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
     st.plotly_chart(fig, use_container_width=True)
 
@@ -173,9 +182,12 @@ else:
     st.title("Interactive Calculator")
 
     # Function input
-    func_input = st.text_input("Enter a function f(x, y):", "x**2 + y**2")
+    func_input = st.text_input("Enter a function f(x, y):", "x^2 + y^2")
+
+    # Allow implicit multiplication
+    transformations = (standard_transformations + (implicit_multiplication_application,))
     try:
-        f_expr = sp.sympify(func_input)
+        f_expr = parse_expr(func_input, transformations=transformations)
     except:
         st.error("Invalid function expression")
         st.stop()
