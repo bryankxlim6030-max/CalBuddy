@@ -1,8 +1,8 @@
 import streamlit as st
 import sympy as sp
-from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
 import numpy as np
 import plotly.graph_objects as go
+from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
 
 st.set_page_config(page_title="Vector Lab", layout="wide")
 
@@ -43,7 +43,6 @@ The function `f(x, y)` describes this terrain.
 
     # Example surfaces
     st.subheader("Example Surfaces")
-
     examples = {
         "Quadratic": lambda X, Y: X**2 + Y**2,
         "Linear": lambda X, Y: 2*X + 3*Y + 5,
@@ -54,7 +53,7 @@ The function `f(x, y)` describes this terrain.
 
     for name, func in examples.items():
         st.markdown(f"**{name} function:**")
-        X, Y = np.meshgrid(np.linspace(-4, 4, 50), np.linspace(-4, 4, 50))
+        X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
         Z = func(X, Y)
         fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False)])
         fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
@@ -88,12 +87,11 @@ Partial derivatives measure **slope along one direction at a time**.
 Imagine hiking on the hill while only moving along x or y — these tell you how steep it is.
 """)
 
-    # Example surface with a fixed point
+    # Example surface with a fixed point (2,2)
     st.subheader("Example Surface")
-    X, Y = np.meshgrid(np.linspace(-4, 4, 50), np.linspace(-4, 4, 50))
+    X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
     Z = X**2 + Y**2
 
-    # Example point
     px, py = 2, 2
     z = px**2 + py**2
     fx_val = 2*px
@@ -102,10 +100,10 @@ Imagine hiking on the hill while only moving along x or y — these tell you how
 
     fig = go.Figure()
     fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False))
-    # Point marker
     fig.add_trace(go.Scatter3d(x=[px], y=[py], z=[z],
                                mode="markers", marker=dict(size=5, color='gold'),
                                name="Example Point"))
+
     # Partial derivative lines
     fig.add_trace(go.Scatter3d(x=[px - s, px + s], y=[py, py],
                                z=[z - fx_val*s, z + fx_val*s],
@@ -137,12 +135,11 @@ It points in the **direction of steepest increase** of the function.
 Think of the gradient as a **horizontal compass**: it shows which way to walk on the hill to increase height fastest.
 """)
 
-    # Example surface with fixed point
+    # Example surface with fixed point (2,2) and tangent plane
     st.subheader("Example Surface")
     X, Y = np.meshgrid(np.linspace(-4,4,50), np.linspace(-4,4,50))
     Z = X**2 + Y**2
 
-    # Example point
     px, py = 2, 2
     z = px**2 + py**2
     fx_val = 2*px
@@ -154,7 +151,7 @@ Think of the gradient as a **horizontal compass**: it shows which way to walk on
                                mode="markers", marker=dict(size=5, color='gold'),
                                name="Example Point"))
 
-    # Gradient arrow (steepest ascent)
+    # Gradient arrow
     mag = np.hypot(fx_val, fy_val) or 1
     dx = fx_val / mag
     dy = fy_val / mag
@@ -162,7 +159,7 @@ Think of the gradient as a **horizontal compass**: it shows which way to walk on
                                mode="lines+markers", line=dict(color="black", width=8), marker=dict(size=4),
                                name="Gradient (Steepest Ascent)"))
 
-    # Tangent plane at the point
+    # Tangent plane
     P = 1.2
     u = np.linspace(-P, P, 15)
     v = np.linspace(-P, P, 15)
@@ -183,6 +180,9 @@ else:
 
     # Function input
     func_input = st.text_input("Enter a function f(x, y):", "x^2 + y^2")
+
+    # Replace ^ with ** for exponentiation
+    func_input = func_input.replace("^", "**")
 
     # Allow implicit multiplication
     transformations = (standard_transformations + (implicit_multiplication_application,))
@@ -225,10 +225,7 @@ else:
     Z = f_func(X, Y)
 
     fig = go.Figure()
-    # Surface
     fig.add_trace(go.Surface(z=Z, x=X, y=Y, colorscale='Blues', opacity=0.7, showscale=False))
-
-    # Point on surface
     fig.add_trace(go.Scatter3d(x=[x_val], y=[y_val], z=[z_val],
                                mode="markers", marker=dict(size=5, color='gold'),
                                name="Selected Point"))
@@ -242,7 +239,7 @@ else:
                                z=[z_val - fy_val * s, z_val + fy_val * s],
                                mode="lines", line=dict(color="green", width=6), name="∂f/∂y"))
 
-    # Gradient arrow (steepest ascent)
+    # Gradient arrow
     mag = np.hypot(fx_val, fy_val) or 1
     dx = fx_val / mag
     dy = fy_val / mag
