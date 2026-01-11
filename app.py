@@ -80,8 +80,8 @@ $$
     st.subheader("Explanation")
     st.markdown("""
 Partial derivatives measure **slope along one direction at a time**.  
-- \(f_x\) → slope if you move only in the x-direction  
-- \(f_y\) → slope if you move only in the y-direction  
+- **fₓ → slope if you move only in the x-direction  
+- **fᵧ → slope if you move only in the y-direction  
 
 Imagine hiking on the hill while only moving along x or y — these tell you how steep it is.
 """)
