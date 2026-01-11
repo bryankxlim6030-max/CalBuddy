@@ -196,11 +196,11 @@ else:
     fy_val = fy_func(x_val, y_val)
 
     with left:
-    st.markdown("### Numerical Values")
-    st.markdown(f"- **f(x,y) = {z_val:.4f}**")
-    st.markdown(f"- **fₓ = {fx_val:.4f}**")
-    st.markdown(f"- **fᵧ = {fy_val:.4f}**")
-    st.markdown(f"- **∇f = <{fx_val:.4f}, {fy_val:.4f}>**")  # <-- updated line
+        st.markdown("### Numerical Values")
+        st.markdown(f"- **f(x,y) = {z_val:.4f}**")
+        st.markdown(f"- **fₓ = {fx_val:.4f}**")
+        st.markdown(f"- **fᵧ = {fy_val:.4f}**")
+        st.markdown(f"- **∇f = <{fx_val:.4f}, {fy_val:.4f}>**")  # <- updated line
 
         # 3D surface mesh
         R, N = 4, 60
@@ -242,4 +242,5 @@ else:
 
         fig.update_layout(scene=dict(aspectratio=dict(x=1, y=1, z=0.7)), margin=dict(t=0,b=0))
         st.plotly_chart(fig, use_container_width=True)
+
 
